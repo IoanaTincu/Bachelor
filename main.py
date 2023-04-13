@@ -1,4 +1,5 @@
 import pandas as pd
+import math
 
 from SampleFormat import SampleFormat
 
@@ -18,13 +19,20 @@ def read_arff_file():
         row = df[df.columns[0]][i].split('#')[0].split()
         topicsSample = df[df.columns[0]][i].split('#')[1]
         sample = []
-        sumOfFrequencies = 0
+        #sumOfFrequencies = 0
+
+        #for data in row:
+            #sumOfFrequencies += int(data.split(':')[1])
 
         for data in row:
-            sumOfFrequencies += int(data.split(':')[1])
+            #sample.append(SampleFormat(data.split(':')[0], int(data.split(':')[1]) / sumOfFrequencies))
 
-        for data in row:
-            sample.append(SampleFormat(data.split(':')[0], int(data.split(':')[1]) / sumOfFrequencies))
+            sample.append(SampleFormat(data.split(':')[0], int(data.split(':')[1])))
+
+            #sample.append(SampleFormat(data.split(':')[0], 1))
+
+            #occurrences = int(data.split(':')[1])
+            #sample.append(SampleFormat(data.split(':')[0], 1 + math.log10(1 + math.log10(occurrences))))
 
         samples.append(sample)
 

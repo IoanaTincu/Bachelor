@@ -150,7 +150,7 @@ class OpDbscan:
 
 
 def main():
-    algorithm = OpDbscan(0.2, 4, 3)
+    algorithm = OpDbscan(0.9, 4, 2)
     clusters = algorithm.OP_DBSCAN_Algorithm()
     dataset = algorithm.dataset
 

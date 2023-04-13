@@ -1,3 +1,4 @@
+from DataSet import TextDocumentsProcessing
 from EuclideanDistance import calculate_distance
 from main import read_arff_file
 from SampleFormat import CandidSetFormat
@@ -5,8 +6,12 @@ from SampleFormat import CandidSetFormat
 
 class OpDbscan:
 
-    def __init__(self, epsilon, n, minPts):
-        self.dataset, self.numberSamples, self.attributes = read_arff_file()
+    def __init__(self, epsilon, n, minPts, numberFiles):
+        # self.dataset, self.numberSamples, self.attributes = read_arff_file()
+
+        self.processing = TextDocumentsProcessing(numberFiles)
+        self.dataset, self.numberSamples, self.attributes = self.processing.process_text_documents()
+
         self.epsilon = epsilon
         self.n = n
         self.minPts = minPts
@@ -147,7 +152,7 @@ class OpDbscan:
 
 
 def main():
-    algorithm = OpDbscan(0.2, 4, 3)
+    algorithm = OpDbscan(5, 3, 4, 27)
     clusters = algorithm.OP_DBSCAN_Algorithm()
 
     indices = {}

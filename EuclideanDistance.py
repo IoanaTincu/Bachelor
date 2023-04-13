@@ -1,5 +1,6 @@
 import math
 
+from DataSet import TextDocumentsProcessing
 from main import read_arff_file
 
 
@@ -33,18 +34,30 @@ def calculate_distance(textDocument1, textDocument2):
     return math.sqrt(sumOfSquares)
 
 
+
+
+# processing = TextDocumentsProcessing(27)
+# dataset, numberSamples, attributes = processing.process_text_documents()
+# print(len(processing.topics))
+# print(processing.topics)
+#
 dataset, numberSamples, attributes = read_arff_file()
-
-
+#
+#
 def minimum_distance():
-    count = 0
+    minimum = 100
+    maximum = -1
+
     for i in range(len(dataset)):
         for j in range(i + 1, len(dataset)):
             distance = calculate_distance(dataset[i], dataset[j])
-            if distance > 1:
-                count += 1
 
-    print(count)
+            if distance < minimum: minimum = distance
+            if distance > maximum: maximum = distance
+
+            # print(distance)
+
+    print('minimum ' + str(minimum) + 'maximum ' + str(maximum))
 
 
 minimum_distance()

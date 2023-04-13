@@ -1,5 +1,7 @@
 import matplotlib
 
+from DataSet import TextDocumentsProcessing
+
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,7 +46,10 @@ def plot_2DPoints():
 
 
 def change_text_documents_into_numpy():
-    samples, numberSamples, attributes = read_arff_file()
+    # samples, numberSamples, attributes = read_arff_file()
+    processing = TextDocumentsProcessing(27)
+    samples, numberSamples, attributes = processing.process_text_documents()
+
     textDocuments = []
 
     for sample in samples:
@@ -71,10 +76,9 @@ def change_text_documents_into_numpy():
 
 def cluster_text_documents():
     textDocuments = change_text_documents_into_numpy()
-    algorithm = DBSCAN(eps=0.2, min_samples=4)
+    algorithm = DBSCAN(eps=5, min_samples=4)
     clusters = algorithm.fit_predict(textDocuments)
 
-    print(set(clusters))
     return clusters
 
 cluster_text_documents()
