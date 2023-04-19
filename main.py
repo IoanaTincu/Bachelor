@@ -5,7 +5,7 @@ from SampleFormat import SampleFormat
 
 
 def read_arff_file():
-    df = pd.read_csv(r"C:\Users\Tincu\Downloads\Reuters - clasification\MultiClass_Training_SVM_1309.0.arff")
+    df = pd.read_csv(r"C:\Users\Tincu\Downloads\Reuters - clasification\MultiClass_Testing_SVM_1309.0.arff")
 
     numberSamples = df.columns[0].split()[1]
     attributes = df[df.columns[0]][0].split()[1]
@@ -19,15 +19,15 @@ def read_arff_file():
         row = df[df.columns[0]][i].split('#')[0].split()
         topicsSample = df[df.columns[0]][i].split('#')[1]
         sample = []
-        #sumOfFrequencies = 0
-
-        #for data in row:
-            #sumOfFrequencies += int(data.split(':')[1])
+        sumOfFrequencies = 0
 
         for data in row:
-            #sample.append(SampleFormat(data.split(':')[0], int(data.split(':')[1]) / sumOfFrequencies))
+            sumOfFrequencies += pow(int(data.split(':')[1]), 2)
 
-            sample.append(SampleFormat(data.split(':')[0], int(data.split(':')[1])))
+        for data in row:
+            sample.append(SampleFormat(data.split(':')[0], 4 * int(data.split(':')[1]) / math.sqrt(sumOfFrequencies)))
+
+            # sample.append(SampleFormat(data.split(':')[0], int(data.split(':')[1])))
 
             #sample.append(SampleFormat(data.split(':')[0], 1))
 

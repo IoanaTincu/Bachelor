@@ -1,3 +1,6 @@
+from sklearn.metrics import silhouette_score, davies_bouldin_score, silhouette_samples
+
+import numpy as np
 from DataSet import TextDocumentsProcessing
 from EuclideanDistance import calculate_distance
 from main import read_arff_file
@@ -6,11 +9,12 @@ from SampleFormat import CandidSetFormat
 
 class OpDbscan:
 
-    def __init__(self, epsilon, n, minPts, numberFiles):
-        # self.dataset, self.numberSamples, self.attributes = read_arff_file()
+    # def __init__(self, epsilon, n, minPts, numberFiles):
+    def __init__(self, epsilon, n, minPts):
+        self.dataset, self.numberSamples, self.attributes = read_arff_file()
 
-        self.processing = TextDocumentsProcessing(numberFiles)
-        self.dataset, self.numberSamples, self.attributes = self.processing.process_text_documents()
+        # self.processing = TextDocumentsProcessing(numberFiles)
+        # self.dataset, self.numberSamples, self.attributes = self.processing.process_text_documents()
 
         self.epsilon = epsilon
         self.n = n
@@ -151,8 +155,35 @@ class OpDbscan:
                 self.clusters[nonCore.point] = nonCore.motherCluster
 
 
+
+
+def change_text_documents_into_numpy(samples, attributes):
+    textDocuments = []
+
+    for sample in samples:
+        data = []
+        i, j = 0, 0
+
+        while i < attributes and j < len(sample):
+            if i < int(sample[j].indexOfAttribute):
+                data.append(0)
+                i += 1
+            else:
+                data.append(sample[j].frequencyOfAttribute)
+                i += 1
+                j += 1
+
+        while i < attributes:
+            data.append(0)
+            i += 1
+
+        textDocuments.append(data)
+
+    return np.array(textDocuments)
+
 def main():
-    algorithm = OpDbscan(5, 3, 4, 27)
+    # algorithm = OpDbscan(5, 3, 4, 27)
+    algorithm = OpDbscan(1.9, 3, 2)
     clusters = algorithm.OP_DBSCAN_Algorithm()
 
     indices = {}
@@ -165,5 +196,39 @@ def main():
     print(len(indices))
     print(indices)
 
+    badClassified = 0
+    goodClassified = 0
+    worstClassified = 0
+    bestClassified = 0
 
-main()
+    if len(set(clusters)) > 2:
+        samples = change_text_documents_into_numpy(algorithm.dataset, algorithm.attributes)
+        silhouetteIndex = silhouette_score(samples, clusters)
+        silhouetteIndices = silhouette_samples(samples, clusters)
+        DB = davies_bouldin_score(samples, clusters)
+
+        for index in silhouetteIndices:
+            if index >= -0.5 and index <= 0:
+                badClassified += 1
+
+            if index > 0 and index <= 0.5:
+                goodClassified += 1
+
+            if index >= -1 and index < -0.5:
+                worstClassified += 1
+
+            if index > 0.5 and index <= 1:
+                bestClassified += 1
+
+        return silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB
+    else:
+        return None, None, None, None, None, None
+
+
+silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB = main()
+print('silhouetteIndex: ' + str(silhouetteIndex))
+print('badClassified: ' + str(badClassified))
+print('goodClassified: ' + str(goodClassified))
+print('worstClassified: ' + str(worstClassified))
+print('bestClassified: ' + str(bestClassified))
+print('DB: ' + str(DB))

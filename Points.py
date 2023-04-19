@@ -6,6 +6,9 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import DBSCAN
+from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_samples
+from sklearn.metrics import davies_bouldin_score
 import seaborn as sns
 from main import read_arff_file
 
@@ -34,21 +37,48 @@ def plot_2DPoints():
     algorithm = DBSCAN(eps=0.9, min_samples=2)
     clusters = algorithm.fit_predict(points)
 
-    numberClusters = len(set(clusters)) - (1 if -1 in clusters else 0)
-    colours = sns.color_palette('bright', numberClusters)
+    badClassified = 0
+    goodClassified = 0
+    worstClassified = 0
+    bestClassified = 0
 
-    coloursClusters = [colours[x] if x >= 0 else (0.5, 0.5, 0.5) for x in clusters]
-    plt.scatter(points[:, 0], points[:, 1], c=coloursClusters)
+    if len(set(clusters)) > 2:
+        silhouetteIndex = silhouette_score(points, clusters)
+        silhouetteIndices = silhouette_samples(points, clusters)
+        DB = davies_bouldin_score(points, clusters)
 
-    plt.show()
+        for index in silhouetteIndices:
+            if index >= -0.5 and index <= 0:
+                badClassified += 1
 
-#plot_2DPoints()
+            if index > 0 and index <= 0.5:
+                goodClassified += 1
+
+            if index >= -1 and index < -0.5:
+                worstClassified += 1
+
+            if index > 0.5 and index <= 1:
+                bestClassified += 1
+
+        return silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB
+    else:
+        return None, None, None, None, None, None
+
+    # numberClusters = len(set(clusters)) - (1 if -1 in clusters else 0)
+    # colours = sns.color_palette('bright', numberClusters)
+    #
+    # coloursClusters = [colours[x] if x >= 0 else (0.5, 0.5, 0.5) for x in clusters]
+    # plt.scatter(points[:, 0], points[:, 1], c=coloursClusters)
+    #
+    # plt.show()
+
+# plot_2DPoints()
 
 
 def change_text_documents_into_numpy():
-    # samples, numberSamples, attributes = read_arff_file()
-    processing = TextDocumentsProcessing(27)
-    samples, numberSamples, attributes = processing.process_text_documents()
+    samples, numberSamples, attributes = read_arff_file()
+    # processing = TextDocumentsProcessing(27)
+    # samples, numberSamples, attributes = processing.process_text_documents()
 
     textDocuments = []
 
@@ -76,10 +106,45 @@ def change_text_documents_into_numpy():
 
 def cluster_text_documents():
     textDocuments = change_text_documents_into_numpy()
-    algorithm = DBSCAN(eps=5, min_samples=4)
+    algorithm = DBSCAN(eps=1.9, min_samples=2)
     clusters = algorithm.fit_predict(textDocuments)
+    print(set(clusters))
 
-    return clusters
+    badClassified = 0
+    goodClassified = 0
+    worstClassified = 0
+    bestClassified = 0
 
-cluster_text_documents()
+    if len(set(clusters)) > 2:
+        silhouetteIndex = silhouette_score(textDocuments, clusters)
+        silhouetteIndices = silhouette_samples(textDocuments, clusters)
+        DB = davies_bouldin_score(textDocuments, clusters)
+
+        for index in silhouetteIndices:
+            if index >= -0.5 and index <= 0:
+                badClassified += 1
+
+            if index > 0 and index <= 0.5:
+                goodClassified += 1
+
+            if index >= -1 and index < -0.5:
+                worstClassified += 1
+
+            if index > 0.5 and index <= 1:
+                bestClassified += 1
+
+        return silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB
+    else:
+        return None, None, None, None, None, None
+
+
+
+
+silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB = cluster_text_documents()
+print('silhouetteIndex2DPoints: ' + str(silhouetteIndex))
+print('badClassified: ' + str(badClassified))
+print('goodClassified: ' + str(goodClassified))
+print('worstClassified: ' + str(worstClassified))
+print('bestClassified: ' + str(bestClassified))
+print('DB: ' + str(DB))
 

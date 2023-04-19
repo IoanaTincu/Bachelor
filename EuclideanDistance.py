@@ -41,23 +41,23 @@ def calculate_distance(textDocument1, textDocument2):
 # print(len(processing.topics))
 # print(processing.topics)
 #
-dataset, numberSamples, attributes = read_arff_file()
+# dataset, numberSamples, attributes = read_arff_file()
 #
 #
-def minimum_distance():
-    minimum = 100
-    maximum = -1
-
-    for i in range(len(dataset)):
-        for j in range(i + 1, len(dataset)):
-            distance = calculate_distance(dataset[i], dataset[j])
-
-            if distance < minimum: minimum = distance
-            if distance > maximum: maximum = distance
-
-            # print(distance)
-
-    print('minimum ' + str(minimum) + 'maximum ' + str(maximum))
-
-
-minimum_distance()
+# def minimum_distance():
+#     minimum = 100
+#     maximum = -1
+#
+#     for i in range(len(dataset)):
+#         for j in range(i + 1, len(dataset)):
+#             distance = calculate_distance(dataset[i], dataset[j])
+#
+#             if distance < minimum: minimum = distance
+#             if distance > maximum: maximum = distance
+#
+#             # print(distance)
+#
+#     print('minimum ' + str(minimum) + 'maximum ' + str(maximum))
+#
+#
+# minimum_distance()

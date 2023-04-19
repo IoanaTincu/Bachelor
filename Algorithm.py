@@ -1,3 +1,5 @@
+from sklearn.metrics import silhouette_score, silhouette_samples, davies_bouldin_score
+
 from PointsDistance import calculate_distance
 from Points import get_2DPoints
 from SampleFormat import CandidSetFormat
@@ -163,6 +165,34 @@ def main():
 
     plot_clusters(dataset, indices)
 
+    badClassified = 0
+    goodClassified = 0
+    worstClassified = 0
+    bestClassified = 0
+
+    if len(set(clusters)) > 2:
+        silhouetteIndex = silhouette_score(dataset, clusters)
+        silhouetteIndices = silhouette_samples(dataset, clusters)
+        DB = davies_bouldin_score(dataset, clusters)
+
+        for index in silhouetteIndices:
+            if index >= -0.5 and index <= 0:
+                badClassified += 1
+
+            if index > 0 and index <= 0.5:
+                goodClassified += 1
+
+            if index >= -1 and index < -0.5:
+                worstClassified += 1
+
+            if index > 0.5 and index <= 1:
+                bestClassified += 1
+
+        return silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB
+    else:
+        return None, None, None, None, None, None
+
+
 
 def plot_clusters(dataset, indices):
     coloursClusters = np.random.rand(len(indices), 3)
@@ -179,4 +209,10 @@ def plot_clusters(dataset, indices):
     print(indices)
 
 
-main()
+silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB = main()
+print('silhouetteIndex: ' + str(silhouetteIndex))
+print('badClassified: ' + str(badClassified))
+print('goodClassified: ' + str(goodClassified))
+print('worstClassified: ' + str(worstClassified))
+print('bestClassified: ' + str(bestClassified))
+print('DB: ' + str(DB))
