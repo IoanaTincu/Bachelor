@@ -9,12 +9,12 @@ from SampleFormat import CandidSetFormat
 
 class OpDbscan:
 
-    # def __init__(self, epsilon, n, minPts, numberFiles):
-    def __init__(self, epsilon, n, minPts):
-        self.dataset, self.numberSamples, self.attributes = read_arff_file()
+    def __init__(self, epsilon, n, minPts, numberFiles):
+    # def __init__(self, epsilon, n, minPts):
+    #     self.dataset, self.numberSamples, self.attributes = read_arff_file()
 
-        # self.processing = TextDocumentsProcessing(numberFiles)
-        # self.dataset, self.numberSamples, self.attributes = self.processing.process_text_documents()
+        self.processing = TextDocumentsProcessing(numberFiles)
+        self.dataset, self.numberSamples, self.attributes = self.processing.process_text_documents()
 
         self.epsilon = epsilon
         self.n = n
@@ -182,53 +182,51 @@ def change_text_documents_into_numpy(samples, attributes):
     return np.array(textDocuments)
 
 def main():
-    # algorithm = OpDbscan(5, 3, 4, 27)
-    algorithm = OpDbscan(1.9, 3, 2)
-    clusters = algorithm.OP_DBSCAN_Algorithm()
+    eps = 0.1
+    while eps <= 4:
+        algorithm = OpDbscan(eps, 2, 2, 2000)
+        # algorithm = OpDbscan(1.9, 3, 2)
+        clusters = algorithm.OP_DBSCAN_Algorithm()
+        eps += 0.1
 
-    indices = {}
-    for i, point in enumerate(clusters):
-        if point not in indices:
-            indices[point] = [i]
+        indices = {}
+        for i, point in enumerate(clusters):
+            if point not in indices:
+                indices[point] = [i]
+            else:
+                indices[point].append(i)
+
+        print(len(indices))
+        print(indices)
+
+        badClassified = 0
+        goodClassified = 0
+        worstClassified = 0
+        bestClassified = 0
+
+        if len(set(clusters)) > 2:
+            samples = change_text_documents_into_numpy(algorithm.dataset, algorithm.attributes)
+            silhouetteIndex = silhouette_score(samples, clusters)
+            silhouetteIndices = silhouette_samples(samples, clusters)
+            DB = davies_bouldin_score(samples, clusters)
+
+            for index in silhouetteIndices:
+                if index >= -0.5 and index <= 0:
+                    badClassified += 1
+
+                if index > 0 and index <= 0.5:
+                    goodClassified += 1
+
+                if index >= -1 and index < -0.5:
+                    worstClassified += 1
+
+                if index > 0.5 and index <= 1:
+                    bestClassified += 1
+
+            print(str(eps) + ': ' + str(silhouetteIndex) + ' ' + str(badClassified) + ' ' + str(
+                goodClassified) + ' ' + str(worstClassified) + ' ' + str(bestClassified) + ' ' + str(DB))
         else:
-            indices[point].append(i)
-
-    print(len(indices))
-    print(indices)
-
-    badClassified = 0
-    goodClassified = 0
-    worstClassified = 0
-    bestClassified = 0
-
-    if len(set(clusters)) > 2:
-        samples = change_text_documents_into_numpy(algorithm.dataset, algorithm.attributes)
-        silhouetteIndex = silhouette_score(samples, clusters)
-        silhouetteIndices = silhouette_samples(samples, clusters)
-        DB = davies_bouldin_score(samples, clusters)
-
-        for index in silhouetteIndices:
-            if index >= -0.5 and index <= 0:
-                badClassified += 1
-
-            if index > 0 and index <= 0.5:
-                goodClassified += 1
-
-            if index >= -1 and index < -0.5:
-                worstClassified += 1
-
-            if index > 0.5 and index <= 1:
-                bestClassified += 1
-
-        return silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB
-    else:
-        return None, None, None, None, None, None
+            print(str(eps) + ': ')
 
 
-silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB = main()
-print('silhouetteIndex: ' + str(silhouetteIndex))
-print('badClassified: ' + str(badClassified))
-print('goodClassified: ' + str(goodClassified))
-print('worstClassified: ' + str(worstClassified))
-print('bestClassified: ' + str(bestClassified))
-print('DB: ' + str(DB))
+main()

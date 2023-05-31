@@ -76,9 +76,9 @@ def plot_2DPoints():
 
 
 def change_text_documents_into_numpy():
-    samples, numberSamples, attributes = read_arff_file()
-    # processing = TextDocumentsProcessing(27)
-    # samples, numberSamples, attributes = processing.process_text_documents()
+    # samples, numberSamples, attributes = read_arff_file()
+    processing = TextDocumentsProcessing(2000)
+    samples, numberSamples, attributes = processing.process_text_documents()
 
     textDocuments = []
 
@@ -106,45 +106,43 @@ def change_text_documents_into_numpy():
 
 def cluster_text_documents():
     textDocuments = change_text_documents_into_numpy()
-    algorithm = DBSCAN(eps=1.9, min_samples=2)
-    clusters = algorithm.fit_predict(textDocuments)
-    print(set(clusters))
 
-    badClassified = 0
-    goodClassified = 0
-    worstClassified = 0
-    bestClassified = 0
+    eps = 0.1
+    while eps <= 4:
+        algorithm = DBSCAN(eps, min_samples=2)
+        eps += 0.1
+        clusters = algorithm.fit_predict(textDocuments)
+        print(set(clusters))
 
-    if len(set(clusters)) > 2:
-        silhouetteIndex = silhouette_score(textDocuments, clusters)
-        silhouetteIndices = silhouette_samples(textDocuments, clusters)
-        DB = davies_bouldin_score(textDocuments, clusters)
+        badClassified = 0
+        goodClassified = 0
+        worstClassified = 0
+        bestClassified = 0
 
-        for index in silhouetteIndices:
-            if index >= -0.5 and index <= 0:
-                badClassified += 1
+        if len(set(clusters)) > 2:
+            silhouetteIndex = silhouette_score(textDocuments, clusters)
+            silhouetteIndices = silhouette_samples(textDocuments, clusters)
+            DB = davies_bouldin_score(textDocuments, clusters)
 
-            if index > 0 and index <= 0.5:
-                goodClassified += 1
+            for index in silhouetteIndices:
+                if index >= -0.5 and index <= 0:
+                    badClassified += 1
 
-            if index >= -1 and index < -0.5:
-                worstClassified += 1
+                if index > 0 and index <= 0.5:
+                    goodClassified += 1
 
-            if index > 0.5 and index <= 1:
-                bestClassified += 1
+                if index >= -1 and index < -0.5:
+                    worstClassified += 1
 
-        return silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB
-    else:
-        return None, None, None, None, None, None
+                if index > 0.5 and index <= 1:
+                    bestClassified += 1
+
+            print(str(eps) + ': ' + str(silhouetteIndex) + ' ' + str(badClassified) + ' ' + str(goodClassified) + ' ' + str(worstClassified) + ' ' + str(bestClassified) + ' ' + str(DB))
+        else:
+            print(str(eps) + ': ')
 
 
 
 
-silhouetteIndex, badClassified, goodClassified, worstClassified, bestClassified, DB = cluster_text_documents()
-print('silhouetteIndex2DPoints: ' + str(silhouetteIndex))
-print('badClassified: ' + str(badClassified))
-print('goodClassified: ' + str(goodClassified))
-print('worstClassified: ' + str(worstClassified))
-print('bestClassified: ' + str(bestClassified))
-print('DB: ' + str(DB))
+cluster_text_documents()
 

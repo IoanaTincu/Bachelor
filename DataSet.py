@@ -21,6 +21,7 @@ class TextDocumentsProcessing:
         self.vocabulary = {}
         self.wordsInVocabulary = 0
         self.samples = []
+        self.sumOfFrequencies = []
         self.topics = {}
         self.occurrencesOfTopics = 0
         self.occurrencesOfWords = {}
@@ -35,9 +36,6 @@ class TextDocumentsProcessing:
         self.entropyDataset = 0
         self.selectedWords = []
 
-
-
-
     def parse_XML_file(self, xmlFile):
         parsedFile = ET.parse(xmlFile)
         root = parsedFile.getroot()
@@ -48,18 +46,12 @@ class TextDocumentsProcessing:
 
         return title, text, topics
 
-
-
-
     def generate_files(self):
-        path = r"C:\Users\Tincu\Downloads\Reuters\Reuters_34\Training"
+        path = r"C:\Users\Tincu\Downloads\Reuters\Reuters_7083"
 
         xmlFiles = [os.path.join(path, f) for f in os.listdir(path)]
 
         return random.sample(xmlFiles, self.numberFiles)
-
-
-
 
     def perform_feature_extraction(self, title, text, topics):
         textDocumentTokens = self.nlp(title + '\n' + text)
@@ -94,12 +86,12 @@ class TextDocumentsProcessing:
 
         self.samples.append(sample)
 
-
-
-
     def process_text_documents(self):
         samples = self.generate_files()
-        # samples = ["C:\\Users\\Tincu\\Downloads\\Reuters\\Reuters_34\\Training\\2917NEWS - Copy.XML", "C:\\Users\\Tincu\\Downloads\\Reuters\\Reuters_34\\Training\\2955NEWS - Copy.XML", "C:\\Users\\Tincu\\Downloads\\Reuters\\Reuters_34\\Training\\2982NEWS - Copy.XML"]
+        # samples = ["C:\\Users\\Tincu\\Downloads\\Reuters\\Reuters_7083\\2822NEWS.XML"]
+        # samples = ["C:\\Users\\Tincu\\Downloads\\Reuters\\Reuters_7083\\2504NEWS - Copy.XML",
+        #            "C:\\Users\\Tincu\\Downloads\\Reuters\\Reuters_7083\\2538NEWS - Copy.XML",
+        #            "C:\\Users\\Tincu\\Downloads\\Reuters\\Reuters_7083\\2775NEWS - Copy.XML"]
 
         for i in range(self.numberFiles):
             title, text, topics = self.parse_XML_file(samples[i])
@@ -123,17 +115,19 @@ class TextDocumentsProcessing:
         self.compute_information_gains()
         self.perform_feature_selection()
 
+        # dataset, numberFiles, attributes = self.convert_selected_words_to_sample_format()
+        # print(dataset)
+
+        # self.normalize_samples()
         return self.convert_selected_words_to_sample_format()
-
-
-
 
     def map_words(self):
         for word in self.vocabulary:
             lowerThanMean = 0
             greaterThanMean = 0
             numberZeros = 0
-            mean = self.sumOfOccurrencesOfWords[self.vocabulary[word]] / len(self.occurrencesOfWords[self.vocabulary[word]])
+            mean = self.sumOfOccurrencesOfWords[self.vocabulary[word]] / len(
+                self.occurrencesOfWords[self.vocabulary[word]])
 
             for j in range(len(self.samples)):
                 if self.vocabulary[word] not in self.topicsOfWords:
@@ -141,39 +135,34 @@ class TextDocumentsProcessing:
                     self.mappedTopicsOfWords[self.vocabulary[word]] = {}
 
                 for topic in self.topicsOfSamples[j]:
-                    if topic not in self.topicsOfWords[self.vocabulary[word]]:
-                        self.topicsOfWords[self.vocabulary[word]][topic] = []
-                        self.mappedTopicsOfWords[self.vocabulary[word]][topic] = []
+                    if topic in self.topics:
+                        if topic not in self.topicsOfWords[self.vocabulary[word]]:
+                            self.topicsOfWords[self.vocabulary[word]][topic] = []
+                            self.mappedTopicsOfWords[self.vocabulary[word]][topic] = []
 
-                    if self.vocabulary[word] not in self.samples[j]:
-                        self.topicsOfWords[self.vocabulary[word]][topic].append(0)
-                        self.mappedTopicsOfWords[self.vocabulary[word]][topic].append(0)
-                        numberZeros += 1
-                    else:
-                        self.topicsOfWords[self.vocabulary[word]][topic].append(self.samples[j][self.vocabulary[word]])
-
-                        if self.samples[j][self.vocabulary[word]] <= mean:
-                            lowerThanMean += 1
-                            self.mappedTopicsOfWords[self.vocabulary[word]][topic].append(1)
+                        if self.vocabulary[word] not in self.samples[j]:
+                            self.topicsOfWords[self.vocabulary[word]][topic].append(0)
+                            self.mappedTopicsOfWords[self.vocabulary[word]][topic].append(0)
+                            numberZeros += 1
                         else:
-                            greaterThanMean += 1
-                            self.mappedTopicsOfWords[self.vocabulary[word]][topic].append(2)
+                            self.topicsOfWords[self.vocabulary[word]][topic].append(self.samples[j][self.vocabulary[word]])
+
+                            if self.samples[j][self.vocabulary[word]] <= mean:
+                                lowerThanMean += 1
+                                self.mappedTopicsOfWords[self.vocabulary[word]][topic].append(1)
+                            else:
+                                greaterThanMean += 1
+                                self.mappedTopicsOfWords[self.vocabulary[word]][topic].append(2)
 
             self.mappedOccurrences[self.vocabulary[word]] = [numberZeros, lowerThanMean, greaterThanMean]
 
             if self.actualNumberFiles == 0:
                 self.actualNumberFiles = numberZeros + lowerThanMean + greaterThanMean
 
-
-
-
     def compute_entropy_of_data_set(self):
         for topic in self.topics:
             probability = self.topics[topic] / self.occurrencesOfTopics
             self.entropyDataset += - probability * math.log2(probability)
-
-
-
 
     def compute_information_gains(self):
         for word in self.vocabulary:
@@ -195,16 +184,10 @@ class TextDocumentsProcessing:
 
             self.informationGains[self.vocabulary[word]] = self.entropyDataset - sum
 
-
-
-
     def perform_feature_selection(self):
-        threshold = 0.09
+        threshold = 0.9
         numberWordsToSelect = int(len(self.vocabulary) * threshold)
         self.selectedWords = heapq.nlargest(numberWordsToSelect, self.informationGains.items(), key=lambda x: x[1])
-
-
-
 
     def convert_selected_words_to_sample_format(self):
         words = [tuple[0] for tuple in self.selectedWords]
@@ -217,12 +200,24 @@ class TextDocumentsProcessing:
 
         return dataset, self.numberFiles, len(words)
 
+    def normalize_samples(self):
+        dataset, numberFiles, attributes = self.convert_selected_words_to_sample_format()
 
+        for i in range(numberFiles):
+            sumOfFrequencies = 0
+
+            for word in dataset[i]:
+                sumOfFrequencies += pow(word.frequencyOfAttribute, 2)
+
+            for word in dataset[i]:
+                word.frequencyOfAttribute = 3 * word.frequencyOfAttribute / math.sqrt(sumOfFrequencies)
+
+        return dataset, numberFiles, attributes
 
 
 # processing = TextDocumentsProcessing(3)
-# print(processing.process_text_documents())
-# print(processing.vocabulary)
+# processing.process_text_documents()
+# print(processing.vocabulary.keys())
 # print(processing.samples)
 # print(processing.topics)
 # print(processing.occurrencesOfTopics)

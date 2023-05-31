@@ -5,7 +5,7 @@ from SampleFormat import SampleFormat
 
 
 def read_arff_file():
-    df = pd.read_csv(r"C:\Users\Tincu\Downloads\Reuters - clasification\MultiClass_Testing_SVM_1309.0.arff")
+    df = pd.read_csv(r"C:\Users\Tincu\Downloads\Reuters\Reuters_7083")
 
     numberSamples = df.columns[0].split()[1]
     attributes = df[df.columns[0]][0].split()[1]

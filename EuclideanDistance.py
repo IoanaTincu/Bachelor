@@ -36,7 +36,7 @@ def calculate_distance(textDocument1, textDocument2):
 
 
 
-# processing = TextDocumentsProcessing(27)
+# processing = TextDocumentsProcessing(3)
 # dataset, numberSamples, attributes = processing.process_text_documents()
 # print(len(processing.topics))
 # print(processing.topics)
@@ -47,6 +47,7 @@ def calculate_distance(textDocument1, textDocument2):
 # def minimum_distance():
 #     minimum = 100
 #     maximum = -1
+#     dataset, numberSamples, attributes = processing.process_text_documents()
 #
 #     for i in range(len(dataset)):
 #         for j in range(i + 1, len(dataset)):
