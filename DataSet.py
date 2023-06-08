@@ -117,9 +117,10 @@ class TextDocumentsProcessing:
 
         # dataset, numberFiles, attributes = self.convert_selected_words_to_sample_format()
         # print(dataset)
-
-        # self.normalize_samples()
-        return self.convert_selected_words_to_sample_format()
+        samples = [os.path.splitext(os.path.basename(path))[0] for path in samples]
+        dataset, numberSamples, attributes = self.normalize_samples()
+        return samples, dataset, numberSamples, attributes
+        # return self.convert_selected_words_to_sample_format()
 
     def map_words(self):
         for word in self.vocabulary:

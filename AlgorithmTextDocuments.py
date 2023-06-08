@@ -14,7 +14,7 @@ class OpDbscan:
     #     self.dataset, self.numberSamples, self.attributes = read_arff_file()
 
         self.processing = TextDocumentsProcessing(numberFiles)
-        self.dataset, self.numberSamples, self.attributes = self.processing.process_text_documents()
+        self.samples, self.dataset, self.numberSamples, self.attributes = self.processing.process_text_documents()
 
         self.epsilon = epsilon
         self.n = n
@@ -154,6 +154,22 @@ class OpDbscan:
             if self.clusters[nonCore.point] == 0:
                 self.clusters[nonCore.point] = nonCore.motherCluster
 
+    def minimum_distance(self):
+        minimum = 100
+        maximum = -1
+
+        for i in range(len(self.dataset)):
+            for j in range(i + 1, len(self.dataset)):
+                distance = calculate_distance(self.dataset[i], self.dataset[j])
+
+                if distance < minimum: minimum = distance
+                if distance > maximum: maximum = distance
+
+                # print(distance)
+
+        print('minimum ' + str(minimum) + ' maximum ' + str(maximum))
+
+
 
 
 
@@ -181,52 +197,26 @@ def change_text_documents_into_numpy(samples, attributes):
 
     return np.array(textDocuments)
 
+
+
+
 def main():
-    eps = 0.1
-    while eps <= 4:
-        algorithm = OpDbscan(eps, 2, 2, 2000)
-        # algorithm = OpDbscan(1.9, 3, 2)
-        clusters = algorithm.OP_DBSCAN_Algorithm()
-        eps += 0.1
+    algorithm = OpDbscan(1.9, 3, 2, 50)
+    clusters = algorithm.OP_DBSCAN_Algorithm()
 
-        indices = {}
-        for i, point in enumerate(clusters):
-            if point not in indices:
-                indices[point] = [i]
-            else:
-                indices[point].append(i)
+    algorithm.minimum_distance()
 
-        print(len(indices))
-        print(indices)
-
-        badClassified = 0
-        goodClassified = 0
-        worstClassified = 0
-        bestClassified = 0
-
-        if len(set(clusters)) > 2:
-            samples = change_text_documents_into_numpy(algorithm.dataset, algorithm.attributes)
-            silhouetteIndex = silhouette_score(samples, clusters)
-            silhouetteIndices = silhouette_samples(samples, clusters)
-            DB = davies_bouldin_score(samples, clusters)
-
-            for index in silhouetteIndices:
-                if index >= -0.5 and index <= 0:
-                    badClassified += 1
-
-                if index > 0 and index <= 0.5:
-                    goodClassified += 1
-
-                if index >= -1 and index < -0.5:
-                    worstClassified += 1
-
-                if index > 0.5 and index <= 1:
-                    bestClassified += 1
-
-            print(str(eps) + ': ' + str(silhouetteIndex) + ' ' + str(badClassified) + ' ' + str(
-                goodClassified) + ' ' + str(worstClassified) + ' ' + str(bestClassified) + ' ' + str(DB))
+    indices = {}
+    for i, point in enumerate(clusters):
+        if point not in indices:
+            indices[point] = [i]
         else:
-            print(str(eps) + ': ')
+            indices[point].append(i)
+
+    print(len(algorithm.samples))
+    print(len(indices))
+    print(indices)
 
 
-main()
+
+# main()
